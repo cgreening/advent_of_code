@@ -1,25 +1,25 @@
 import fs from "fs";
+import passports, { Passport } from "./passport_data";
+// const raw = fs.readFileSync(__dirname + "/passports.txt", {
+//   encoding: "utf-8",
+// });
+// const passports: Array<{ [key: string]: string }> = [];
 
-const raw = fs.readFileSync(__dirname + "/passports.txt", {
-  encoding: "utf-8",
-});
-const passports: Array<{ [key: string]: string }> = [];
-
-let passport: { [key: string]: string } = {};
-raw.split("\n").forEach((row) => {
-  if (row.length === 0) {
-    passports.push(passport);
-    passport = {};
-  } else {
-    row.split(" ").forEach((pair) => {
-      const [key, value] = pair.split(":");
-      passport[key] = value;
-    });
-  }
-});
+// let passport: { [key: string]: string } = {};
+// raw.split("\n").forEach((row) => {
+//   if (row.length === 0) {
+//     passports.push(passport);
+//     passport = {};
+//   } else {
+//     row.split(" ").forEach((pair) => {
+//       const [key, value] = pair.split(":");
+//       passport[key] = value;
+//     });
+//   }
+// });
 
 const required = ["byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid"];
-function isValid(passport: { [key: string]: string }) {
+function isValid(passport: Passport) {
   return !required.some((key) => !(key in passport));
 }
 
@@ -66,13 +66,13 @@ const validation = {
   pid: regexValidator(/^\d{9}$/), // (Passport ID) - a nine-digit number, including leading zeroes.
 };
 
-function isValid2(passport: { [key: string]: string }) {
+function isValid2(passport: Passport) {
   return Object.keys(validation).every((key) => {
     if (!(key in passport)) {
       //   console.log(key, "missing");
       return false;
     }
-    const value = passport[key];
+    const value = (passport as any)[key];
     // console.log(key, value, (validation as any)[key](value));
     return (validation as any)[key](value);
   });
