@@ -13,20 +13,21 @@ type GroupAnswers = {
   intersection: Set<string> | null;
 };
 
-const input = fs.readFileSync(__dirname + "/input.txt", { encoding: "utf-8" });
+const input = fs.readFileSync(__dirname + "../day6/input.txt", {
+  encoding: "utf-8",
+});
 
 const groupsAnswers: GroupAnswers[] = input.split("\n\n").map((data) => {
-  const groupAnswers = data.split("\n").map((row) => new Set(row.split("")));
+  const members = data.split("\n").map((row) => new Set(row.split("")));
   return {
-    union: groupAnswers.reduce(
+    union: members.reduce(
       (previous, current) => union(previous, current),
       new Set<string>()
     ),
-    intersection: groupAnswers.reduce(
+    intersection: members.reduce(
       // for the first row just use the set, otherwise intersect with the previous
-      (previous, current) =>
-        previous ? intersection(previous, current) : current,
-      null as Set<string> | null
+      (previous, current) => intersection(previous, current),
+      members[0]
     ),
   };
 });
