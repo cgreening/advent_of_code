@@ -39,12 +39,13 @@ function canContainColour(bagColour: string, containedColor: string): boolean {
 // potential memoize opportunity
 function countBags(colour: string): number {
   const contents = colourToContent.get(colour) || [];
-  // +1 for the container bag
   return (
+    // +1 for the container bag
     1 +
-    contents
-      .map((content) => content.count * countBags(content.colour))
-      .reduce((total, current) => total + current, 0)
+    contents.reduce(
+      (total, content) => total + content.count * countBags(content.colour),
+      0
+    )
   );
 }
 
