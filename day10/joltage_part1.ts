@@ -137,50 +137,28 @@ const example1 = [
   3,
 ];
 
-// depth first search
-function findPath(
-  start: number,
-  dest: number,
-  available: Set<number>,
-  path: number[]
-) {
-  path.push(start);
-  if (start === dest) {
-    return true;
-  }
-  for (let i = 1; i <= 3; i++) {
-    if (available.has(start + i)) {
-      if (findPath(start + i, dest, available, path)) {
-        return true;
-      }
-    }
-  }
-  // backtrack
-  path.pop();
-  return false;
-}
-
 function solve(adaptors: number[]) {
   // work out the final value we want
   const dest = adaptors.reduce((max, current) => Math.max(max, current)) + 3;
   // add it to the list of adaptors
   adaptors.push(dest);
-  const path: number[] = [];
-  // find a path from 0 jolts to the destination recording the path
-  if (findPath(0, dest, new Set(adaptors), path)) {
-    let difference1 = 0;
-    let difference3 = 0;
-    for (let i = 1; i < path.length; i++) {
-      const difference = path[i] - path[i - 1];
-      if (difference === 1) {
-        difference1++;
-      }
-      if (difference === 3) {
-        difference3++;
-      }
+  // find a path from 0 jolts to the destination
+  const available = new Set(adaptors);
+  let currentJolts = 0;
+  let difference1 = 0;
+  let difference3 = 0;
+  while (currentJolts != dest) {
+    if (available.has(currentJolts + 1)) {
+      currentJolts += 1;
+      difference1++;
+    } else if (available.has(currentJolts + 2)) {
+      currentJolts += 2;
+    } else if (available.has(currentJolts + 3)) {
+      currentJolts += 3;
+      difference3++;
     }
-    return difference1 * difference3;
   }
+  return difference1 * difference3;
 }
 console.time("Solve");
 const result = solve(input);

@@ -146,24 +146,28 @@ console.time("Search");
 console.log(count(adaptors));
 console.timeEnd("Search");
 
-function dp(adaptors: number[]) {
+function doDp(adaptors: number[]) {
+  // get the max value
   const max = adaptors.reduce((m, c) => Math.max(m, c), 0);
+  // add in our device
   adaptors.push(max + 3);
-  const lookup = new Set(adaptors);
-  const cache = new Array<number>(max + 1);
-  cache[0] = 1;
+  // filter out invalid numbers
+  const filter = new Set(adaptors);
+  // the dynamic programming magic
+  const dp: { [key: number]: number } = {};
+  // initial value - one path into the adaptors
+  dp[0] = 1;
+  // build the dynamic programming data
   for (let i = 1; i <= max + 3; i++) {
-    let count = 0;
-    if (lookup.has(i)) {
-      count = (cache[i - 1] || 0) + (cache[i - 2] || 0) + (cache[i - 3] || 0);
+    if (filter.has(i)) {
+      dp[i] = (dp[i - 1] || 0) + (dp[i - 2] || 0) + (dp[i - 3] || 0);
     }
-    cache[i] = count;
   }
-  // console.log(cache);
-  return cache[max + 3];
+  // here's the result
+  return dp[max + 3];
 }
 
 console.time("fast");
-const result = dp(adaptors);
+const result = doDp(adaptors);
 console.timeEnd("fast");
 console.log(result);
