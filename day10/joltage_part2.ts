@@ -149,22 +149,24 @@ console.timeEnd("Search");
 function doDp(adaptors: number[]) {
   // get the max value
   const max = adaptors.reduce((m, c) => Math.max(m, c), 0);
+  // my device (max adaptor+3)
+  const myDevice = max + 3;
   // add in our device
-  adaptors.push(max + 3);
-  // filter out invalid numbers
+  adaptors.push(myDevice);
+  // filter for invalid numbers
   const filter = new Set(adaptors);
   // the dynamic programming magic
   const dp: { [key: number]: number } = {};
   // initial value - one path into the adaptors
   dp[0] = 1;
   // build the dynamic programming data
-  for (let i = 1; i <= max + 3; i++) {
+  for (let i = 1; i <= myDevice; i++) {
     if (filter.has(i)) {
       dp[i] = (dp[i - 1] || 0) + (dp[i - 2] || 0) + (dp[i - 3] || 0);
     }
   }
   // here's the result
-  return dp[max + 3];
+  return dp[myDevice];
 }
 
 console.time("fast");

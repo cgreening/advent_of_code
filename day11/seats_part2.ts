@@ -208,7 +208,7 @@ function countChanges(seats: Array<string[]>) {
 }
 
 console.log("Starting");
-console.time("Part1");
+console.time("Part2");
 const result = countChanges(seats);
-console.timeEnd("Part1");
+console.timeEnd("Part2");
 console.log(result);

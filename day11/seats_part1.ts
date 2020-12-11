@@ -115,7 +115,10 @@ const exmaple = [
   "L.LLLLL.LL",
 ];
 
-const seats = seatStrings.map((str) => str.split(""));
+// padd the seats with '.' to make avoid having to do bounds checks
+const seats = seatStrings.map((str) => [".", ...str.split(""), "."]);
+seats.push(new Array(seats[0].length).fill("."));
+seats.unshift(new Array(seats[0].length).fill("."));
 
 function countOccupied(x: number, y: number, seats: Array<string[]>) {
   let count = 0;
@@ -126,14 +129,6 @@ function countOccupied(x: number, y: number, seats: Array<string[]>) {
       }
       let posX = x + dx;
       let posY = y + dy;
-      if (
-        posX < 0 ||
-        posY < 0 ||
-        posX >= seats[0].length ||
-        posY >= seats.length
-      ) {
-        continue;
-      }
       if (seats[posY][posX] === "#") {
         count++;
       }
@@ -150,8 +145,8 @@ function runStep(src: Array<string[]>) {
   //   console.log(src);
   const newSeats = copySeats(src);
   let count = 0;
-  for (let y = 0; y < seats.length; y++) {
-    for (let x = 0; x < seats[0].length; x++) {
+  for (let y = 1; y < seats.length - 1; y++) {
+    for (let x = 1; x < seats[0].length - 1; x++) {
       const occ = countOccupied(x, y, src);
       if (src[y][x] === "L" && occ === 0) {
         newSeats[y][x] = "#";
