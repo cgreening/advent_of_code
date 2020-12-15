@@ -1,6 +1,13 @@
-import { textSpanContainsTextSpan } from "typescript";
+//
+//  main.swift
+//  day11
+//
+//  Created by Chris Greening on 11/12/2020.
+//
 
-const seatStrings = [
+import Foundation
+
+let seatStrings = [
   "LLLLL.LLLLLLLL..LLLLLLLLLLLLLL.LLLL..LL..LLLLLLLL.LLLL.LLLLLLLLLLLL.LLLLLL.LLLLLL.LLLLLLLL",
   "LLLLL.LLLLLLLL.LLLLLL.LLLLLLLL.LLLLLLLLL.LLL.LLLL.LLLLLLLLLLLLLLLLLLLLLLLL.LLLLLL.LLLLLLLL",
   "LLLLLLLLLLLLLLLLLLLLL.LLLLLLLL.LLLLLLL.L.LLLLL.LLLLLLL.LLLLLLLLLLLLLLLLLLLLLLLLLL.L.LLLLLL",
@@ -100,9 +107,9 @@ const seatStrings = [
   "LL.LL.LLLLLLLL.LLLLLL.LLLLLLLL.LLLL.L.LL.LLLLLLLL.LLLL.LLLLLLL...LLLLLLLLL.LLLLLL.LL.LLLLL",
   "LLLLL.LLLLLLLL.LLLLLL.LLLLL.LLLLLLL.LLLLLLLL.LLLLLLLLL.LLLLLLLLL.LLLLLL..L.LLLLLL.LLLLLLLL",
   "LLLLL.LLLLLLLL.LLLLLLLLLL.LLLLLLLLL.LLLL.LLLLLLLL.LLL..LLLLLLLLL.LLLLLLLLL.LLLLLL.LLLLLLLL",
-];
+]
 
-const exmaple = [
+let exmaple = [
   "L.LL.LL.LL",
   "LLLLLLL.LL",
   "L.L.L..L..",
@@ -113,104 +120,106 @@ const exmaple = [
   "LLLLLLLLLL",
   "L.LLLLLL.L",
   "L.LLLLL.LL",
-];
+]
 
 // turn the strings into arrays so we can change them
-const seats = seatStrings.map((str) => str.split(""));
+let seats = seatStrings.map { (str) in
+    Array(str)
+}
 
-const width = seats[0].length;
-const height = seats.length;
+let width = seats[0].count
+let height = seats.count
 
-function checkDirection(
-  x: number,
-  y: number,
-  dx: number,
-  dy: number,
-  seats: Array<string[]>
-) {
-  let posX = x + dx;
-  let posY = y + dy;
+func checkDirection(
+  x: Int,
+  y: Int,
+  dx: Int,
+  dy: Int,
+seats: [[String.Element]]
+) -> Bool {
+  var posX = x + dx
+  var posY = y + dy
   while (true) {
-    if (posX < 0 || posY < 0 || posX >= width || posY >= height) {
-      return false;
+    if  posX < 0 || posY < 0 || posX >= width || posY >= height {
+      return false
     }
-    const contents = seats[posY][posX];
-    if (contents === "#") {
-      return true;
+    let contents = seats[posY][posX]
+    if (contents == "#") {
+      return true
     }
-    if (contents === "L") {
-      return false;
+    if (contents == "L") {
+      return false
     }
-    posX += dx;
-    posY += dy;
+    posX = posX + dx
+    posY = posY + dy
   }
 }
 
-function countOccupied(x: number, y: number, seats: Array<string[]>) {
-  let count = 0;
-  for (let dx = -1; dx <= 1; dx++) {
-    for (let dy = -1; dy <= 1; dy++) {
-      if (dx == 0 && dy == 0) {
-        continue;
-      }
-      if (checkDirection(x, y, dx, dy, seats)) {
-        count++;
-        // stop counting early
-        if (count >= 5) {
-          return count;
+func countOccupied(x: Int, y: Int, seats: [[String.Element]]) -> Int {
+    var count = 0
+    for dx in -1...1 {
+        for dy in -1...1 {
+            if dx == 0 && dy == 0 {
+                continue
+            }
+            if (checkDirection(x: x, y: y, dx: dx, dy: dy, seats: seats)) {
+                count = count + 1
+                // stop counting early
+                if (count >= 5) {
+                    return count
+                }
+            }
         }
-      }
     }
-  }
-  return count;
+    return count
 }
 
-// deep copy of the array - there must be a proper way to do this...
-function copySeats(src: Array<string[]>) {
-  return src.map((str) => [...str]);
-}
-
-function runStep(src: Array<string[]>) {
-  //   console.log(src);
-  const newSeats = copySeats(src);
-  let count = 0;
-  for (let y = 0; y < height; y++) {
-    for (let x = 0; x < width; x++) {
-      const occ = countOccupied(x, y, src);
-      const contents = src[y][x];
-      if (contents === "L" && occ === 0) {
-        newSeats[y][x] = "#";
-        count++;
-      }
-      if (contents === "#" && occ >= 5) {
-        newSeats[y][x] = "L";
-        count++;
-      }
+func runStep(src: [[String.Element]]) -> ([[String.Element]], Int) {
+    var newSeats = src
+    var count = 0
+    
+    for y in 0..<height {
+        for x in 0..<width {
+            let occ = countOccupied(x: x, y: y, seats: src)
+            let contents = src[y][x]
+            if contents == "L" && occ == 0 {
+                newSeats[y][x] = "#"
+                count = count + 1
+            }
+            if contents == "#" && occ >= 5 {
+                newSeats[y][x] = "L"
+                count = count + 1
+            }
+        }
     }
-  }
-  return { newSeats, count };
+    return (newSeats, count)
 }
 
-function countSeats(seats: Array<string[]>) {
-  return seats.reduce(
-    (total, row) => row.filter((s) => s === "#").length + total,
-    0
-  );
+func countSeats(seats: [[String.Element]]) -> Int {
+    return seats.reduce(0, { total, row in
+        total + row.filter({ (x) -> Bool in
+            x=="#"
+        }).count
+    })
 }
 
-function countChanges(seats: Array<string[]>) {
-  let updated = seats;
+func countChanges(seats: [[String.Element]]) -> Int {
+  var updated = seats
   while (true) {
-    const { newSeats, count } = runStep(updated);
-    if (count === 0) {
-      return countSeats(updated);
+    let (newSeats, count) = runStep(src: updated)
+    if count == 0 {
+        return countSeats(seats: updated)
     }
-    updated = newSeats;
+    updated = newSeats
   }
 }
 
-console.log("Starting");
-console.time("Part2");
-const result = countChanges(seats);
-console.timeEnd("Part2");
-console.log(result);
+let start = DispatchTime.now() // <<<<<<<<<< Start time
+let result = countChanges(seats: seats)
+let end = DispatchTime.now()   // <<<<<<<<<<   end time
+print(result)
+let nanoTime = end.uptimeNanoseconds - start.uptimeNanoseconds // <<<<< Difference in nano seconds (UInt64)
+let timeInterval = Double(nanoTime) / 1_000_000_000 // Technically could overflow for long running tests
+
+print("Time to evaluate problem: \(timeInterval) seconds")
+
