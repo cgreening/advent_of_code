@@ -1,105 +1,6 @@
 import { isExpressionStatement } from "typescript";
 
 function day18Part1() {
-  function evaluateExpression(expr: string) {
-    interface Expression {
-      evaluate(): number;
-      dump(): string;
-    }
-
-    class NumberExpression implements Expression {
-      value: number;
-      constructor(value: number) {
-        this.value = value;
-      }
-      evaluate() {
-        return this.value;
-      }
-      dump() {
-        return `${this.value}`;
-      }
-    }
-
-    class BinaryExpression implements Expression {
-      operator: string;
-      left: Expression;
-      right: Expression;
-      constructor(operator: string, left: Expression, right: Expression) {
-        this.operator = operator;
-        this.left = left;
-        this.right = right;
-      }
-      evaluate() {
-        if (this.operator === "+") {
-          return this.left.evaluate() + this.right.evaluate();
-        } else {
-          return this.left.evaluate() * this.right.evaluate();
-        }
-      }
-      dump() {
-        return `(${this.left.dump()} ${this.operator} ${this.right.dump()})`;
-      }
-    }
-
-    function getBracketedTerms(terms: string[]): string[] {
-      // find the closing bracked
-      let bracketCount = 1;
-      let subTerms: string[] = [];
-      while (bracketCount > 0) {
-        const newTerm = terms.shift();
-        if (!newTerm) {
-          throw new Error("Mismatched brackets");
-        }
-        if (newTerm === "(") {
-          bracketCount++;
-        } else if (newTerm === ")") {
-          bracketCount--;
-        }
-        if (bracketCount != 0) {
-          subTerms.push(newTerm);
-        }
-      }
-      return subTerms;
-    }
-
-    function getExpression(terms: string[]): Expression {
-      let leftExpression: Expression | null = null;
-      while (terms.length > 0) {
-        const term = terms.shift()!;
-        if (term === "(") {
-          leftExpression = getExpression(getBracketedTerms(terms));
-        } else if (term === "+" || term === "*") {
-          const peek = terms.shift()!;
-          if (peek == "(") {
-            leftExpression = new BinaryExpression(
-              term,
-              leftExpression!,
-              getExpression(getBracketedTerms(terms))
-            );
-          } else
-            leftExpression = new BinaryExpression(
-              term,
-              leftExpression!,
-              new NumberExpression(parseInt(peek, 10))
-            );
-        } else {
-          leftExpression = new NumberExpression(parseInt(term, 10));
-        }
-      }
-      if (leftExpression == null) {
-        throw new Error("Did not parse");
-      }
-      return leftExpression;
-    }
-
-    expr = expr.replace(/\(/g, "( ");
-    expr = expr.replace(/\)/g, " )");
-    console.log(expr);
-    const expression = getExpression(expr.split(" "));
-    console.log("Parsed:", expression.dump());
-    return expression.evaluate();
-  }
-
   const input = [
     "6 + (3 + 6 + 5 * 4) * (4 + 3) * 8 + 6 + 6",
     "7 + 6 + (9 + 4 * (8 + 7 * 8 + 2 * 7 * 9) * 9 + 5 + 3) + 6 + (7 + 5 + 7 * 9 + 9) * ((4 + 9 * 3 * 4 * 3) + 6 * 8)",
@@ -474,6 +375,87 @@ function day18Part1() {
     "3 + (7 * (2 + 5 * 5 * 4 * 4 + 7) * 4 * 4)",
     "8 + 3 * ((3 * 7 * 3 + 4 * 5) * (6 + 8 + 9 * 7 + 6) * 9 + 5 * (5 + 4 + 4 + 4))",
   ];
+
+  function evaluateExpression(expr: string) {
+    interface Expression {
+      evaluate(): number;
+      dump(): string;
+    }
+
+    class NumberExpression implements Expression {
+      value: number;
+      constructor(value: number) {
+        this.value = value;
+      }
+      evaluate() {
+        return this.value;
+      }
+      dump() {
+        return `${this.value}`;
+      }
+    }
+
+    class BinaryExpression implements Expression {
+      operator: string;
+      left: Expression;
+      right: Expression;
+      constructor(operator: string, left: Expression, right: Expression) {
+        this.operator = operator;
+        this.left = left;
+        this.right = right;
+      }
+      evaluate() {
+        if (this.operator === "+") {
+          return this.left.evaluate() + this.right.evaluate();
+        } else {
+          return this.left.evaluate() * this.right.evaluate();
+        }
+      }
+      dump() {
+        return `(${this.left.dump()} ${this.operator} ${this.right.dump()})`;
+      }
+    }
+
+    function tokenize(expression: string): string[] {
+      expression = expression.replace(/\(/g, "( ");
+      expression = expression.replace(/\)/g, " )");
+      return expression.split(" ");
+    }
+
+    function getExpression(tokens: string[]): Expression {
+      let leftExpression: Expression | null = null;
+      while (tokens.length > 0) {
+        const token = tokens.shift()!;
+        if (token === "(") {
+          leftExpression = getExpression(tokens);
+        } else if (token === ")") {
+          return leftExpression!;
+        } else if (token === "+" || token === "*") {
+          const rightToken = tokens.shift()!;
+          // handle start of the new expression on the right hand side
+          const rightExpression =
+            rightToken == "("
+              ? getExpression(tokens)
+              : new NumberExpression(parseInt(rightToken, 10));
+          leftExpression = new BinaryExpression(
+            token,
+            leftExpression!,
+            rightExpression
+          );
+        } else {
+          leftExpression = new NumberExpression(parseInt(token, 10));
+        }
+      }
+      if (leftExpression == null) {
+        throw new Error("Did not parse");
+      }
+      return leftExpression;
+    }
+
+    const expression = getExpression(tokenize(expr));
+    console.log("Parsed:", expression.dump());
+    return expression.evaluate();
+  }
 
   const result = input.reduce(
     (total, expr) => total + evaluateExpression(expr),

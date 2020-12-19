@@ -3,55 +3,6 @@ import { isExpressionStatement } from "typescript";
 type Token = string | Token[];
 
 function day18Part1() {
-  function tokenise(expr: string[]): Array<Token[] | Token> {
-    const tokens: Array<Token | Token[]> = [];
-    while (expr.length > 0) {
-      const token = expr.shift()!;
-      if (token === "(") {
-        const subTokens = tokenise(expr);
-        tokens.push(subTokens);
-      } else if (token === ")") {
-        return tokens;
-      } else {
-        tokens.push(token);
-      }
-    }
-    return tokens;
-  }
-
-  function evaluate(tokens: Array<Token[] | Token>): number {
-    let flattened = tokens.map((token) => {
-      if (Array.isArray(token)) {
-        return evaluate(token);
-      }
-      if (token === "+") {
-        return -1;
-      }
-      if (token === "*") {
-        return -2;
-      }
-      return parseInt(token, 10);
-    });
-    while (true) {
-      const addIndex = flattened.findIndex((op) => op === -1);
-      // no more adds to process
-      if (addIndex === -1) {
-        break;
-      }
-      // need to remove add and the left and right and replace with the addition
-      flattened = [
-        ...flattened.slice(0, addIndex - 1),
-        flattened[addIndex - 1] + flattened[addIndex + 1],
-        ...flattened.slice(addIndex + 2),
-      ];
-    }
-    let product = flattened[0];
-    for (let i = 2; i < flattened.length; i += 2) {
-      product *= flattened[i];
-    }
-    return product;
-  }
-
   const input = [
     "6 + (3 + 6 + 5 * 4) * (4 + 3) * 8 + 6 + 6",
     "7 + 6 + (9 + 4 * (8 + 7 * 8 + 2 * 7 * 9) * 9 + 5 + 3) + 6 + (7 + 5 + 7 * 9 + 9) * ((4 + 9 * 3 * 4 * 3) + 6 * 8)",
@@ -427,10 +378,63 @@ function day18Part1() {
     "8 + 3 * ((3 * 7 * 3 + 4 * 5) * (6 + 8 + 9 * 7 + 6) * 9 + 5 * (5 + 4 + 4 + 4))",
   ];
 
-  function evaluateExpression(expr: string) {
+  function tokenize(expr: string): string[] {
     expr = expr.replace(/\(/g, "( ");
     expr = expr.replace(/\)/g, " )");
-    return evaluate(tokenise(expr.split(" ")));
+    return expr.split(" ");
+  }
+
+  function getExpression(expr: string[]): Array<Token[] | Token> {
+    const tokens: Array<Token | Token[]> = [];
+    while (expr.length > 0) {
+      const token = expr.shift()!;
+      if (token === "(") {
+        const subTokens = getExpression(expr);
+        tokens.push(subTokens);
+      } else if (token === ")") {
+        return tokens;
+      } else {
+        tokens.push(token);
+      }
+    }
+    return tokens;
+  }
+
+  function evaluate(tokens: Array<Token[] | Token>): number {
+    let flattened = tokens.map((token) => {
+      if (Array.isArray(token)) {
+        return evaluate(token);
+      }
+      if (token === "+") {
+        return -1;
+      }
+      if (token === "*") {
+        return -2;
+      }
+      return parseInt(token, 10);
+    });
+    while (true) {
+      const addIndex = flattened.findIndex((op) => op === -1);
+      // no more adds to process
+      if (addIndex === -1) {
+        break;
+      }
+      // need to remove add and the left and right and replace with the addition
+      flattened = [
+        ...flattened.slice(0, addIndex - 1),
+        flattened[addIndex - 1] + flattened[addIndex + 1],
+        ...flattened.slice(addIndex + 2),
+      ];
+    }
+    let product = flattened[0];
+    for (let i = 2; i < flattened.length; i += 2) {
+      product *= flattened[i];
+    }
+    return product;
+  }
+
+  function evaluateExpression(expr: string) {
+    return evaluate(getExpression(tokenize(expr)));
   }
 
   const result = input.reduce(
