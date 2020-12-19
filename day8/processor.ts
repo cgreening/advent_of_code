@@ -1,6 +1,5 @@
-import { getParsedCommandLineOfConfigFile } from "typescript";
-
-const instructions = `
+{
+  const instructions = `
 acc +37
 acc -4
 nop +405
@@ -624,62 +623,63 @@ acc +45
 acc +0
 acc +28
 jmp +1`
-  .split("\n")
-  .filter((line) => line);
+    .split("\n")
+    .filter((line) => line);
 
-interface ParsedInstruction {
-  command: string;
-  operand: number;
-}
-
-const parsed: ParsedInstruction[] = instructions.map((instruction) => {
-  const [command, operand] = instruction.split(" ");
-  return {
-    command,
-    operand: parseInt(operand, 10),
-  };
-});
-
-function process(parsedInstructions: ParsedInstruction[]) {
-  let pc = 0;
-  let acc = 0;
-  const processed = new Set();
-  while (!processed.has(pc) && pc != parsedInstructions.length) {
-    processed.add(pc);
-    const instruction = parsedInstructions[pc];
-    switch (instruction.command) {
-      case "jmp":
-        pc += instruction.operand;
-        break;
-      case "acc":
-        acc += instruction.operand;
-      case "nop":
-      default:
-        pc++;
-    }
+  interface ParsedInstruction {
+    command: string;
+    operand: number;
   }
-  return { acc, success: pc === parsedInstructions.length };
-}
 
-// part 1
-console.log(process(parsed).acc);
+  const parsed: ParsedInstruction[] = instructions.map((instruction) => {
+    const [command, operand] = instruction.split(" ");
+    return {
+      command,
+      operand: parseInt(operand, 10),
+    };
+  });
 
-// part 2
-for (const instruction of parsed) {
-  if (instruction.command === "nop") {
-    instruction.command = "jmp";
-    const { acc, success } = process(parsed);
-    if (success) {
-      console.log("Solution is", acc);
+  function process(parsedInstructions: ParsedInstruction[]) {
+    let pc = 0;
+    let acc = 0;
+    const processed = new Set();
+    while (!processed.has(pc) && pc != parsedInstructions.length) {
+      processed.add(pc);
+      const instruction = parsedInstructions[pc];
+      switch (instruction.command) {
+        case "jmp":
+          pc += instruction.operand;
+          break;
+        case "acc":
+          acc += instruction.operand;
+        case "nop":
+        default:
+          pc++;
+      }
     }
-    instruction.command = "nop";
+    return { acc, success: pc === parsedInstructions.length };
   }
-  if (instruction.command === "jmp") {
-    instruction.command = "nop";
-    const { acc, success } = process(parsed);
-    if (success) {
-      console.log("Solution is", acc);
+
+  // part 1
+  console.log(process(parsed).acc);
+
+  // part 2
+  for (const instruction of parsed) {
+    if (instruction.command === "nop") {
+      instruction.command = "jmp";
+      const { acc, success } = process(parsed);
+      if (success) {
+        console.log("Solution is", acc);
+      }
+      instruction.command = "nop";
     }
-    instruction.command = "jmp";
+    if (instruction.command === "jmp") {
+      instruction.command = "nop";
+      const { acc, success } = process(parsed);
+      if (success) {
+        console.log("Solution is", acc);
+      }
+      instruction.command = "jmp";
+    }
   }
 }
