@@ -26,15 +26,23 @@ import fs, { readFile } from "fs";
       }
       let result = false;
       if (rule.includes("|")) {
+        // need to match one of the options in the rule
         result = rule.split(" | ").some((option) => match(input, option));
       } else if (rule.includes('"')) {
+        // terminal rule input needs to equal is (a or b)
         result = `"${input}"` === rule;
       } else if (rule.includes(" ")) {
-        const [first, ...rest] = rule.split(" ");
+        // we've got a rule with multiple subrules - e.g. "5 6 7 8 9"
+        // math the first rule and then the rest of the rules
+        const [firstRule, ...remainingRules] = rule.split(" ");
+        // the start of the input must match the first rule
+        // and the remaining input must match the rest of the rules
         for (let i = 1; i < input.length; i++) {
+          const startInput = input.substr(0, i);
+          const remainingInput = input.substr(i, input.length - i);
           result =
-            match(input.substr(0, i), first) &&
-            match(input.substr(i, input.length - i), rest.join(" "));
+            match(startInput, firstRule) &&
+            match(remainingInput, remainingRules.join(" "));
           if (result) {
             break;
           }
