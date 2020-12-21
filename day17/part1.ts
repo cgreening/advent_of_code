@@ -1,25 +1,14 @@
-import { X_OK } from "constants";
-import { isAccessor } from "typescript";
+import { Sparse4DArray } from "../helpers/arrays";
 {
-  class Sparse4DArray {
+  class TrackingSparse4DArray extends Sparse4DArray {
     activeCount = 0;
     // this could be more efficient - we can work out x,y,z,w from the key so we could use the keys
     potentiallyActive: {
       [key: number]: { x: number; y: number; z: number; w: number };
     } = {};
-    memory = new Set<number>();
-    getKey(x: number, y: number, z: number, w: number) {
-      // big assumption here that we don't go out of range!!!!
-      return x * 100 * 100 * 100 + y * 100 * 100 + z * 100 + w;
-    }
-    getValue(x: number, y: number, z: number, w: number): boolean {
-      const key = this.getKey(x, y, z, w);
-      return this.memory.has(key);
-    }
-    setValue(x: number, y: number, z: number, w: number, value: boolean) {
-      const key = this.getKey(x, y, z, w);
+    setValue(x: number, y: number, z: number, w: number) {
+      super.setValue(x, y, z, w);
       this.activeCount++;
-      this.memory.add(key);
       // update the potentially active list
       for (let dx = -1; dx <= 1; dx++) {
         for (let dy = -1; dy <= 1; dy++) {
@@ -41,8 +30,8 @@ import { isAccessor } from "typescript";
   }
 
   function day17Part1(input: string) {
-    function simulate(cube: Sparse4DArray): Sparse4DArray {
-      const result = new Sparse4DArray();
+    function simulate(cube: TrackingSparse4DArray): TrackingSparse4DArray {
+      const result = new TrackingSparse4DArray(100);
       Object.values(cube.potentiallyActive).forEach((coords) => {
         const { x, y, z, w } = coords;
         let activeNeighbours = 0;
@@ -62,26 +51,27 @@ import { isAccessor } from "typescript";
         }
         if (cube.getValue(x, y, z, w)) {
           if (activeNeighbours === 2 || activeNeighbours === 3) {
-            result.setValue(x, y, z, w, true);
+            result.setValue(x, y, z, w);
           }
         } else {
           if (activeNeighbours === 3) {
-            result.setValue(x, y, z, w, true);
+            result.setValue(x, y, z, w);
           }
         }
       });
       return result;
     }
 
-    let cube = new Sparse4DArray();
+    let cube = new TrackingSparse4DArray(100);
     input.split("\n").forEach((yRow, y) => {
       yRow.split("").forEach((isActive, x) => {
-        cube.setValue(x, y, 0, 0, isActive === "#");
+        if (isActive === "#") {
+          cube.setValue(x, y, 0, 0);
+        }
       });
     });
     console.time("day17Part2");
     for (let i = 0; i < 6; i++) {
-      // console.log(Object.keys(cube.potentiallyActive).length);
       cube = simulate(cube);
     }
     console.timeEnd("day17Part2");
