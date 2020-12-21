@@ -1,27 +1,14 @@
-import fs, { readFile } from "fs";
+import fs from "fs";
+import { make2DArray } from "../helpers/arrays";
 import {
-  addSyntheticLeadingComment,
-  collapseTextChangeRangesAcrossMultipleVersions,
-  isBigIntLiteral,
-} from "typescript";
+  crop,
+  flipHorizontal,
+  flipVertical,
+  rotateLeft,
+} from "../helpers/image";
 {
   function day20(data: string, size: number) {
     type Edges = { top: string; bottom: string; left: string; right: string };
-
-    function flipVertical(pixels: string[][]) {
-      return [...pixels].reverse();
-    }
-    function flipHorizontal(pixels: string[][]) {
-      return pixels.map((row) => [...row].reverse());
-    }
-    function rotateLeft(pixels: string[][]) {
-      const newPixels = new Array<string[]>();
-      for (let x = 0; x < pixels.length; x++) {
-        const newRow = pixels.map((row) => row[x]);
-        newPixels.unshift(newRow);
-      }
-      return newPixels;
-    }
 
     class Tile {
       tileId: string;
@@ -36,9 +23,7 @@ import {
         const right = image.map((row) => row[row.length - 1]).join("");
         this.edges = { top, bottom, left, right };
         this.image = image;
-        this.croppedImage = image
-          .slice(1, image.length - 1)
-          .map((row) => row.slice(1, row.length - 1));
+        this.croppedImage = crop(image, 1);
       }
       flipHorizontal() {
         return new Tile(this.tileId, flipHorizontal(this.image));
@@ -168,10 +153,7 @@ import {
     )!;
 
     // the 2D image of the tile ids in their correct place
-    const tiles2D: Array<Tile[]> = [];
-    for (let i = 0; i < size; i++) {
-      tiles2D.push(new Array<Tile>(size));
-    }
+    const tiles2D = make2DArray<Tile>(size, size);
     // we know the top left corner
     tiles2D[0][0] = corner;
     // tile is used up
@@ -205,10 +187,7 @@ import {
       }
     }
     // build up the image from the tiles
-    const pixels: Array<string[]> = [];
-    for (let i = 0; i < size * 8; i++) {
-      pixels.push(new Array<string>(size * 8));
-    }
+    const pixels = make2DArray<string>(size * 8, size * 8);
     for (let y = 0; y < size; y++) {
       for (let x = 0; x < size; x++) {
         for (let dy = 0; dy < 8; dy++) {
