@@ -1,5 +1,6 @@
 import Heap from "heap";
 import { isConstructorTypeNode } from "typescript";
+import singleEntryReduction from "../helpers/singleEntryReducer";
 import {
   day16NearbyTickets,
   day16MyTicket,
@@ -36,8 +37,8 @@ import {
 
     // for each rule work out which field indexes are valid
     type RuleToFieldIndexes = {
-      rule: TicketRule;
-      fieldIndexes: Set<number>;
+      key: TicketRule;
+      values: Set<number>;
     };
     const rulesToFieldIndexes: Array<RuleToFieldIndexes> = rules.map((rule) => {
       const validFields = new Set<number>();
@@ -46,29 +47,15 @@ import {
           validFields.add(field);
         }
       }
-      return { rule, fieldIndexes: validFields };
+      return { key: rule, values: validFields };
     });
     // add to a min heap - types are wrong so force to correct type
-    const heapSorter = (a: RuleToFieldIndexes, b: RuleToFieldIndexes) =>
-      a.fieldIndexes.size - b.fieldIndexes.size;
-    Heap.heapify<RuleToFieldIndexes>(rulesToFieldIndexes, heapSorter);
-    const result: { [key: string]: number } = {};
-    while (rulesToFieldIndexes.length) {
-      const smallest = Heap.pop(rulesToFieldIndexes, heapSorter);
-      if (smallest.fieldIndexes.size !== 1) {
-        throw new Error("Should only have one valid field");
-      }
-      // update the result
-      const field = [...smallest.fieldIndexes][0];
-      result[smallest.rule.name] = field;
-      // remove this field from everything else
-      rulesToFieldIndexes.forEach((entry) => entry.fieldIndexes.delete(field));
-      // update the heap - this is a bit inefficient really - should just update the items that had the field...
-      Heap.heapify(rulesToFieldIndexes, heapSorter);
-    }
-    return Object.keys(result)
-      .filter((rule) => rule.startsWith("departure"))
-      .reduce((product, rule) => (product *= myTicket[result[rule]]), 1);
+    const result = singleEntryReduction<TicketRule, number>(
+      rulesToFieldIndexes
+    );
+    return Array.from(result.keys())
+      .filter((rule) => rule.name.startsWith("departure"))
+      .reduce((product, rule) => product * myTicket[result.get(rule)!], 1);
   }
 
   const exampleRules = [
