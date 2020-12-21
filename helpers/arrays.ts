@@ -30,3 +30,22 @@ export class Sparse4DArray {
     this.memory.add(key);
   }
 }
+
+export function binarySearch<T>(
+  search: T,
+  start: number,
+  end: number,
+  array: T[]
+): boolean {
+  if (start > end) {
+    return false;
+  }
+  const mid = Math.floor((start + end) / 2);
+  if (array[mid] === search) {
+    return true;
+  }
+  if (array[mid] > search) {
+    return binarySearch(search, start, mid - 1, array);
+  }
+  return binarySearch(search, mid + 1, end, array);
+}

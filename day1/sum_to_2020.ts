@@ -1,3 +1,5 @@
+import { binarySearch } from "../helpers/arrays";
+
 {
   const numbers = [
     1765,
@@ -201,25 +203,6 @@
     1887,
     1968,
   ];
-
-  function binarySearch(
-    search: number,
-    start: number,
-    end: number,
-    array: number[]
-  ): boolean {
-    if (start > end) {
-      return false;
-    }
-    const mid = Math.floor((start + end) / 2);
-    if (array[mid] === search) {
-      return true;
-    }
-    if (array[mid] > search) {
-      return binarySearch(search, start, mid - 1, array);
-    }
-    return binarySearch(search, mid + 1, end, array);
-  }
 
   console.time("both parts");
   numbers.sort();
