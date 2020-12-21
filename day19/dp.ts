@@ -17,9 +17,13 @@ import fs, { readFile } from "fs";
       {}
     );
 
-    const memo: { [key: string]: boolean } = {};
+    // const memo: { [key: string]: boolean } = {};
 
-    function match(input: string, rule: string): boolean {
+    function match(
+      input: string,
+      rule: string,
+      memo: { [key: string]: boolean }
+    ): boolean {
       const key = rule + input;
       if (key in memo) {
         return memo[key];
@@ -27,7 +31,7 @@ import fs, { readFile } from "fs";
       let result = false;
       if (rule.includes("|")) {
         // need to match one of the options in the rule
-        result = rule.split(" | ").some((option) => match(input, option));
+        result = rule.split(" | ").some((option) => match(input, option, memo));
       } else if (rule.includes('"')) {
         // terminal rule input needs to equal is (a or b)
         result = `"${input}"` === rule;
@@ -41,20 +45,20 @@ import fs, { readFile } from "fs";
           const startInput = input.substr(0, i);
           const remainingInput = input.substr(i, input.length - i);
           result =
-            match(startInput, firstRule) &&
-            match(remainingInput, remainingRules.join(" "));
+            match(startInput, firstRule, memo) &&
+            match(remainingInput, remainingRules.join(" "), memo);
           if (result) {
             break;
           }
         }
       } else {
-        result = match(input, rules[rule]);
+        result = match(input, rules[rule], memo);
       }
       memo[key] = result;
       return result;
     }
 
-    const result = messages.filter((message) => match(message, rules["0"]))
+    const result = messages.filter((message) => match(message, rules["0"], {}))
       .length;
     return result;
   }
