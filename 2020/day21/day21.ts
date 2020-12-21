@@ -1,19 +1,17 @@
 import fs from "fs";
-import { intersection } from "../helpers/set";
-import singleEntryReduction from "../helpers/singleEntryReducer";
+import { intersection } from "../../helpers/set";
+import singleEntryReduction from "../../helpers/singleEntryReducer";
 
 function day21(inputFile: string) {
-  console.time("Day19");
   // read in the input getting the alergens and ingredients for each line
-  const foods = fs
-    .readFileSync(__dirname + inputFile, { encoding: "utf-8" })
-    .split("\n")
-    .map((food) => {
-      const [ingredientsString, alergensString] = food.split(" (contains ");
-      const ingredients = ingredientsString.split(" ");
-      const alergens = alergensString.replace(/[),]/g, "").split(" ");
-      return { alergens, ingredients };
-    });
+  const raw = fs.readFileSync(__dirname + inputFile, { encoding: "utf-8" });
+  console.time("Day19");
+  const foods = raw.split("\n").map((food) => {
+    const [ingredientsString, alergensString] = food.split(" (contains ");
+    const ingredients = ingredientsString.split(" ");
+    const alergens = alergensString.replace(/[),]/g, "").split(" ");
+    return { alergens, ingredients };
+  });
   // create a mapping from alergen to unique list of ingredients that contain that alergen
   const alergenToIngredient = foods.reduce(
     (map, food) =>
@@ -34,7 +32,6 @@ function day21(inputFile: string) {
       }, map),
     new Map<string, Set<string>>()
   );
-
   // work out ingredients with no alergen count for part 1
   const part1 = foods.reduce(
     (total, food) =>
@@ -44,7 +41,6 @@ function day21(inputFile: string) {
       ).length,
     0
   );
-
   // reduce the ingredients to alergens so each ingredient only has one alergen
   const dangerousIngredients = Array.from(
     ingredientToAlergen.entries()

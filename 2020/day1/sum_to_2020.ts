@@ -1,4 +1,4 @@
-import { binarySearch } from "../helpers/arrays";
+import { binarySearch } from "../../helpers/arrays";
 
 {
   const numbers = [

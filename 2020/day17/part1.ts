@@ -1,4 +1,4 @@
-import { Sparse4DArray } from "../helpers/arrays";
+import { Sparse4DArray } from "../../helpers/arrays";
 {
   class TrackingSparse4DArray extends Sparse4DArray {
     activeCount = 0;

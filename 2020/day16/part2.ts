@@ -1,6 +1,6 @@
 import Heap from "heap";
 import { isConstructorTypeNode } from "typescript";
-import singleEntryReduction from "../helpers/singleEntryReducer";
+import singleEntryReduction from "../../helpers/singleEntryReducer";
 import {
   day16NearbyTickets,
   day16MyTicket,

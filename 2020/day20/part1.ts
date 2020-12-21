@@ -1,11 +1,11 @@
 import fs from "fs";
-import { make2DArray } from "../helpers/arrays";
+import { make2DArray } from "../../helpers/arrays";
 import {
   crop,
   flipHorizontal,
   flipVertical,
   rotateLeft,
-} from "../helpers/image";
+} from "../../helpers/image";
 {
   function day20(data: string, size: number) {
     type Edges = { top: string; bottom: string; left: string; right: string };
