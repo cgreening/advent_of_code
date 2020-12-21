@@ -202,11 +202,31 @@
     1968,
   ];
 
+  function binarySearch(
+    search: number,
+    start: number,
+    end: number,
+    array: number[]
+  ): boolean {
+    if (start > end) {
+      return false;
+    }
+    const mid = Math.floor((start + end) / 2);
+    if (array[mid] === search) {
+      return true;
+    }
+    if (array[mid] > search) {
+      return binarySearch(search, start, mid - 1, array);
+    }
+    return binarySearch(search, mid + 1, end, array);
+  }
+
+  console.time("both parts");
+  numbers.sort();
   numbers.forEach((n1, index) => {
     const n2 = 2020 - n1;
     const remainingNumbers = numbers.slice(index + 1);
-    // this could be optimised by sorting the numbers initially and then doing a binary search
-    if (remainingNumbers.includes(n2)) {
+    if (binarySearch(n2, 0, remainingNumbers.length, remainingNumbers)) {
       console.log("Two numbers", n1, n2, n1 * n2);
     }
   });
@@ -216,22 +236,10 @@
     remainingNumbers1.forEach((n2, index) => {
       const remainingNumbers2 = remainingNumbers1.slice(index + 1);
       const n3 = 2020 - (n1 + n2);
-      // this could be optimised by sorting the numbers initially and then doing a binary search
-      if (remainingNumbers2.includes(n3)) {
+      if (binarySearch(n3, 0, remainingNumbers2.length, remainingNumbers2)) {
         console.log("Three numbers", n1, n2, n3, n1 * n2 * n3);
       }
     });
   });
-
-  /*
-const s = new Set(numbers);
-
-numbers.forEach((n1, index) => {
-  s.delete(n1);
-  const n2 = 2020 - n1;
-  if (s.has(n2)) {
-    console.log("Two numbers", n1, n2, n1 * n2);
-  }
-});
-*/
+  console.timeEnd("both parts");
 }
