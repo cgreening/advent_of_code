@@ -1,6 +1,6 @@
 import fs from "fs";
-import Heap from "heap";
 import { intersection } from "../helpers/set";
+import singleEntryReduction from "../helpers/singleEntryReducer";
 
 function day21(inputFile: string) {
   console.time("Day19");
@@ -46,30 +46,11 @@ function day21(inputFile: string) {
   );
 
   // reduce the ingredients to alergens so each ingredient only has one alergen
-  type IngredientAndAlgergens = { ingredient: string; alergens: Set<string> };
-  // use a min heap to make it easier to pop off the ingredient with the smallest number of alergens
-  const heapSorter = (a: IngredientAndAlgergens, b: IngredientAndAlgergens) =>
-    a.alergens.size - b.alergens.size;
-  // convert to a nicer data structure
   const dangerousIngredients = Array.from(
     ingredientToAlergen.entries()
-  ).map(([ingredient, alergens]) => ({ ingredient, alergens }));
+  ).map(([ingredient, alergens]) => ({ key: ingredient, values: alergens }));
   // and do the reductio
-  Heap.heapify<IngredientAndAlgergens>(dangerousIngredients, heapSorter);
-  const result = new Map<string, string>();
-  while (dangerousIngredients.length) {
-    const smallest = Heap.pop(dangerousIngredients, heapSorter);
-    if (smallest.alergens.size !== 1) {
-      throw new Error("Should only have one alergen");
-    }
-    // update the result
-    const field = [...smallest.alergens][0];
-    result.set(smallest.ingredient, field);
-    // remove this field from everything else
-    dangerousIngredients.forEach((entry) => entry.alergens.delete(field));
-    // update the heap - this is a bit inefficient really - should just update the items that had the field...
-    Heap.heapify(dangerousIngredients, heapSorter);
-  }
+  const result = singleEntryReduction(dangerousIngredients);
   // sort the dangerous ingredients by the alergen
   const sortedDangerousIngredients = Array.from(result.entries())
     .sort((a, b) => {
