@@ -17,6 +17,8 @@ function day22(inputfile: string) {
 
   const { player1, player2 } = parse();
 
+  console.time("Part1");
+
   while (player1.length > 0 && player2.length > 0) {
     const top1 = player1.shift()!;
     const top2 = player2.shift()!;
@@ -29,11 +31,12 @@ function day22(inputfile: string) {
     }
   }
   const winningHand = player1.length == 0 ? player2 : player1;
-  console.log(winningHand);
   const part1 = winningHand
     .reverse()
     .reduce((totalScore, card, index) => totalScore + card * (index + 1), 0);
 
+  console.timeEnd("Part1");
+  console.log(winningHand);
   console.log("Part1", part1);
 }
 
