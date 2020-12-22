@@ -20,18 +20,19 @@ function day22(inputfile: string) {
   console.time("Part2");
 
   const recursiveGame = (player1: number[], player2: number[]) => {
-    const gameCache = new Set<string>();
+    const gameCache1 = new Set<string>();
+    const gameCache2 = new Set<string>();
     // play the game
     while (player1.length > 0 && player2.length > 0) {
       // have we seen this game before?
       const handKey1 = player1.join(",");
       const handKey2 = player2.join(",");
-      if (gameCache.has(handKey1) && gameCache.has(handKey2)) {
+      if (gameCache1.has(handKey1) && gameCache2.has(handKey2)) {
         // trigger player 1 win - this seems to work though it's not clear from the instruction what should be in player 1's hand when he wins
         return { player1, player2: [] };
       }
-      gameCache.add(handKey1);
-      gameCache.add(handKey2);
+      gameCache1.add(handKey1);
+      gameCache2.add(handKey2);
       const top1 = player1.shift()!;
       const top2 = player2.shift()!;
       // default rules
