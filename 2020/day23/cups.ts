@@ -2,6 +2,12 @@ import { SSL_OP_CIPHER_SERVER_PREFERENCE } from "constants";
 import { isConstructorTypeNode } from "typescript";
 
 function day23(input: string) {
+  console.time("Processing");
+  // parse the data
+  const cupsArray = input.split("").map((cup) => parseInt(cup, 10));
+  const maxCup = 1000000;
+  const minCup = 1;
+
   class Node {
     value: number;
     right: Node | undefined;
@@ -13,72 +19,68 @@ function day23(input: string) {
     }
   }
 
-  const findValue = (value: number, head: Node) => {
-    let search = head;
-    do {
-      if (search.value === value) {
-        return search;
-      }
-    } while (search != head);
-  };
-
   const pushValue = (value: number, head: Node) => {
     const newNode = new Node(value);
     newNode.right = head;
     newNode.left = head.left!.right;
     head.left!.right = newNode;
     head.left = newNode;
+    return newNode;
   };
+  // quick lookup from label to cup
+  const lookup = Array<Node>(1000001);
 
-  const dump = (head: Node) => {
-    const values: number[] = [];
-    let search = head;
-    do {
-      values.push(search.value);
-      search = search.right!;
-    } while (search != head);
-    return values.join(" ");
-  };
-
-  const cupsArray = input.split("").map((cup) => parseInt(cup, 10));
-  const maxCup = cupsArray.reduce((m, c) => Math.max(m, c), cupsArray[0]);
-  const minCup = cupsArray.reduce((m, c) => Math.min(m, c), cupsArray[0]);
-
-  let cups = new Node(cupsArray[0]);
-  cupsArray.slice(1).forEach((cup) => pushValue(cup, cups));
-  console.log(dump(cups));
-
-  let currentCup = cups;
-  for (let move = 0; move < 10; move++) {
-    console.log(`-- move ${move + 1} --`);
-    console.log(`cups: (${currentCup?.value}) ${dump(cups)}`);
+  // add the fixed cups
+  let head = new Node(cupsArray[0]);
+  lookup[cupsArray[0]] = head;
+  cupsArray.slice(1).forEach((cup) => {
+    const node = pushValue(cup, head);
+    lookup[cup] = node;
+  });
+  // add the remaining 1m cups
+  for (let i = 10; i <= 1000000; i++) {
+    const node = pushValue(i, head);
+    lookup[i] = node;
+  }
+  // start the game
+  let currentCup = head;
+  for (let move = 0; move < 10000000; move++) {
     // cut out three cups to the right of the current cup
     const takenCups = currentCup!.right!;
-    currentCup.right = currentCup?.right?.right?.right;
-    console.log(
-      `pick up ${takenCups.value} ${takenCups!.right!.value} ${
-        takenCups!.right!.value
-      }`
-    );
+    currentCup.right = currentCup?.right?.right?.right?.right;
     // where to put the cups?
-    /*    let destination = findValue(currentCup.value - 1, currentCup);
-
-    console.log(`destination ${destination}`);
-    const destIndex = cups.indexOf(destination);
-    console.log("Dest index = ", destIndex);
-    if (destIndex == 0) {
-      cups = [...takenCups, ...cups];
-    } else {
-      cups = [
-        ...cups.slice(0, destIndex + 1),
-        ...takenCups,
-        ...cups.slice(destIndex + 1, cups.length),
-      ];
+    let searchValue = currentCup.value;
+    let destination: Node | undefined = undefined;
+    while (destination === undefined) {
+      // decrease search and wrap around
+      searchValue = searchValue - 1;
+      if (searchValue < minCup) {
+        searchValue = maxCup;
+      }
+      // don't include the cups we've taken out
+      if (
+        searchValue !== takenCups.value &&
+        searchValue !== takenCups.right!.value &&
+        searchValue !== takenCups.right!.right!.value
+      ) {
+        destination = lookup[searchValue];
+      }
     }
-    console.log();
-    currentCupIndex = (cups.indexOf(currentCup) + 1) % cups.length;*/
+    // insert the cups back into the list
+    takenCups.right!.right!.right = destination.right;
+    destination.right = takenCups;
+    // move to the next cup
+    currentCup = currentCup.right!;
   }
-  console.log(dump(cups));
+  console.timeEnd("Processing");
+  // part 2 results
+  const one = lookup[1];
+  console.log(
+    "Done!",
+    one.right!.value,
+    one.right!.right!.value,
+    one.right!.value * one.right!.right!.value
+  );
 }
 
-day23("389125467");
+day23("916438275");
