@@ -1,3 +1,5 @@
+import { Node, pushValue } from "../../helpers/linked_list";
+
 function day23(input: string) {
   console.time("Processing");
   // parse the data
@@ -5,27 +7,8 @@ function day23(input: string) {
   const maxCup = 1000000;
   const minCup = 1;
 
-  class Node {
-    value: number;
-    right: Node | undefined;
-    left: Node | undefined;
-    constructor(value: number) {
-      this.value = value;
-      this.left = this;
-      this.right = this;
-    }
-  }
-
-  const pushValue = (value: number, head: Node) => {
-    const newNode = new Node(value);
-    newNode.right = head;
-    newNode.left = head.left!.right;
-    head.left!.right = newNode;
-    head.left = newNode;
-    return newNode;
-  };
   // quick lookup from label to cup
-  const lookup = Array<Node>(1000001);
+  const lookup = Array<Node<number>>(1000001);
 
   // add the fixed cups
   let head = new Node(cupsArray[0]);
@@ -47,7 +30,7 @@ function day23(input: string) {
     currentCup.right = currentCup?.right?.right?.right?.right;
     // where to put the cups?
     let searchValue = currentCup.value;
-    let destination: Node | undefined = undefined;
+    let destination: Node<number> | undefined = undefined;
     while (destination === undefined) {
       // decrease search and wrap around
       searchValue = searchValue - 1;
