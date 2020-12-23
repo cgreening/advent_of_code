@@ -1,6 +1,3 @@
-import { SSL_OP_CIPHER_SERVER_PREFERENCE } from "constants";
-import { isConstructorTypeNode } from "typescript";
-
 function day23(input: string) {
   console.time("Processing");
   // parse the data
