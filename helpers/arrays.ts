@@ -6,6 +6,54 @@ export function make2DArray<T>(width: number, height: number) {
   return result;
 }
 
+export class Sparse3DArray {
+  limit: number;
+  activeCount: number = 0;
+  memory = new Set<number>();
+  constructor(limit: number) {
+    this.limit = limit;
+  }
+  getKey(x: number, y: number, z: number) {
+    // big assumption here that we don't go out of range!!!!
+    return (
+      x * this.limit * this.limit * this.limit +
+      y * this.limit * this.limit +
+      z * this.limit
+    );
+  }
+  getValue(x: number, y: number, z: number): boolean {
+    const key = this.getKey(x, y, z);
+    return this.memory.has(key);
+  }
+  setValue(x: number, y: number, z: number, value: boolean) {
+    const key = this.getKey(x, y, z);
+    if (value) {
+      if (this.memory.has(key)) {
+        return;
+      }
+      this.memory.add(key);
+      this.activeCount++;
+    } else {
+      if (this.memory.has(key)) {
+        this.activeCount--;
+        this.memory.delete(key);
+      }
+    }
+  }
+  flipValue(x: number, y: number, z: number) {
+    const key = this.getKey(x, y, z);
+    if (this.memory.has(key)) {
+      this.activeCount--;
+      this.memory.delete(key);
+      return false;
+    } else {
+      this.activeCount++;
+      this.memory.add(key);
+      return true;
+    }
+  }
+}
+
 export class Sparse4DArray {
   limit: number;
   memory = new Set<number>();
