@@ -1,12 +1,10 @@
 import fs from "fs";
 import { Sparse3DArray } from "../../helpers/arrays";
 function day24Part1(input: string) {
-  const instructions = fs
-    .readFileSync(__dirname + input, { encoding: "utf-8" })
-    .split("\n");
-
   // https://www.redblobgames.com/grids/hexagons/
-  const directions = {
+  const directions: {
+    [key: string]: { dx: number; dy: number; dz: number };
+  } = {
     e: { dx: +1, dy: -1, dz: 0 },
     ne: { dx: +1, dy: 0, dz: -1 },
     nw: { dx: 0, dy: +1, dz: -1 },
@@ -14,6 +12,13 @@ function day24Part1(input: string) {
     sw: { dx: -1, dy: 0, dz: +1 },
     se: { dx: 0, dy: -1, dz: +1 },
   };
+
+  const instructions = fs
+    .readFileSync(__dirname + input, { encoding: "utf-8" })
+    .split("\n")
+    .map((line) =>
+      line.match(/e|ne|nw|w|sw|se/g)!.map((direction) => directions[direction])
+    );
 
   class TilesArray extends Sparse3DArray {
     potentiallyActive: Map<
@@ -47,36 +52,16 @@ function day24Part1(input: string) {
   }
 
   console.time("Part1");
-  const tiles = new TilesArray(1000);
+  const tiles = new TilesArray(200);
   instructions.forEach((instruction) => {
-    let x = 0;
-    let y = 0;
-    let z = 0;
-    while (instruction.length > 0) {
-      let direction = { dx: 0, dy: 0, dz: 0 };
-      if (instruction.startsWith("e")) {
-        direction = directions.e;
-        instruction = instruction.slice(1);
-      } else if (instruction.startsWith("se")) {
-        direction = directions.se;
-        instruction = instruction.slice(2);
-      } else if (instruction.startsWith("sw")) {
-        direction = directions.sw;
-        instruction = instruction.slice(2);
-      } else if (instruction.startsWith("w")) {
-        direction = directions.w;
-        instruction = instruction.slice(1);
-      } else if (instruction.startsWith("nw")) {
-        direction = directions.nw;
-        instruction = instruction.slice(2);
-      } else if (instruction.startsWith("ne")) {
-        direction = directions.ne;
-        instruction = instruction.slice(2);
-      }
-      x += direction.dx;
-      y += direction.dy;
-      z += direction.dz;
-    }
+    const { x, y, z } = instruction.reduce(
+      (position, direction) => ({
+        x: position.x + direction.dx,
+        y: position.y + direction.dy,
+        z: position.z + direction.dz,
+      }),
+      { x: 0, y: 0, z: 0 }
+    );
     tiles.flipValue(x, y, z);
   });
   console.timeEnd("Part1");
@@ -118,3 +103,4 @@ function day24Part1(input: string) {
 }
 
 day24Part1("/input.txt");
+// day24Part1("/example.txt");
