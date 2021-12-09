@@ -36,49 +36,30 @@ function fill(x: number, y: number, map: number[][]) {
   explored.add(100 * y + x);
   const height = map.length;
   const width = map[0].length;
-
+  const directions = [
+    { dx: 0, dy: 1 },
+    { dx: 0, dy: -1 },
+    { dx: 1, dy: 0 },
+    { dx: -1, dy: 0 },
+  ];
   let count = 0;
   while (frontier.length > 0) {
     let current = frontier.pop() || 0;
     let [y, x] = [Math.floor(current / 100), current % 100];
-    // console.log(x, y, map[y][x]);
     count++;
     const value = map[y][x];
-    if (
-      x > 0 &&
-      map[y][x - 1] > value &&
-      map[y][x - 1] !== 9 &&
-      !explored.has(100 * y + x - 1)
-    ) {
-      explored.add(100 * y + x - 1);
-      frontier.push(100 * y + x - 1);
-    }
-    if (
-      x < width - 1 &&
-      map[y][x + 1] > value &&
-      map[y][x + 1] !== 9 &&
-      !explored.has(100 * y + x + 1)
-    ) {
-      explored.add(100 * y + x + 1);
-      frontier.push(100 * y + x + 1);
-    }
-    if (
-      y > 0 &&
-      map[y - 1][x] > value &&
-      map[y - 1][x] !== 9 &&
-      !explored.has(100 * (y - 1) + x)
-    ) {
-      explored.add(100 * (y - 1) + x);
-      frontier.push(100 * (y - 1) + x);
-    }
-    if (
-      y < height - 1 &&
-      map[y + 1][x] > value &&
-      map[y + 1][x] !== 9 &&
-      !explored.has(100 * (y + 1) + x)
-    ) {
-      explored.add(100 * (y + 1) + x);
-      frontier.push(100 * (y + 1) + x);
+    for (let direction of directions) {
+      const nx = x + direction.dx;
+      const ny = y + direction.dy;
+      if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+        const n = 100 * ny + nx;
+        if (!explored.has(n)) {
+          if (map[ny][nx] > value && map[ny][nx] !== 9) {
+            frontier.push(n);
+            explored.add(n);
+          }
+        }
+      }
     }
   }
   return count;
