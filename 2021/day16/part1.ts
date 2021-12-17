@@ -1,64 +1,8 @@
-interface Operator {
-  getValue(): number;
-}
-
-class Value implements Operator {
-  private value: number;
-  constructor(value: number) {
-    this.value = value;
-  }
-  getValue(): number {
-    return this.value;
-  }
-}
-
-class PacketFunction implements Operator {
-  private type: number;
-  private values: Operator[];
-  constructor(type: number, values: Operator[]) {
-    this.type = type;
-    this.values = values;
-  }
-  getValue(): number {
-    switch (this.type) {
-      case 0:
-        return this.values.reduce((acc, packet) => acc + packet.getValue(), 0);
-      case 1:
-        return this.values.reduce((acc, packet) => acc * packet.getValue(), 1);
-      case 2:
-        return Math.min(...this.values.map((packet) => packet.getValue()));
-      case 3:
-        return Math.max(...this.values.map((packet) => packet.getValue()));
-      case 5:
-        if (this.values[0].getValue() > this.values[1].getValue()) {
-          return 1;
-        } else {
-          return 0;
-        }
-      case 6:
-        if (this.values[0].getValue() < this.values[1].getValue()) {
-          return 1;
-        } else {
-          return 0;
-        }
-      case 7:
-        if (this.values[0].getValue() === this.values[1].getValue()) {
-          return 1;
-        } else {
-          return 0;
-        }
-      default:
-        console.error("Unknown packet function", this.type);
-        return 0;
-    }
-  }
-}
-
 function parsePacket(
   context: { binary: string },
   packetsToParse = -1
-): Operator[] {
-  const result: Operator[] = [];
+): number[] {
+  const result: number[] = [];
   while (context.binary.length > 6 && packetsToParse !== 0) {
     // first three bits are the packet version
     const versionString = context.binary.substring(0, 3);
@@ -78,8 +22,9 @@ function parsePacket(
         context.binary = context.binary.substring(5);
       }
       // this is the result
-      result.push(new Value(parseInt(value, 2)));
+      result.push(parseInt(value, 2));
     } else {
+      let children: number[] = [];
       // operator packet
       if (context.binary[0] === "0") {
         // if next bit is 0 then read the next 15 bits to get the length in bits of the subpackets
@@ -88,16 +33,51 @@ function parsePacket(
         const length = parseInt(lengthString, 2);
         context.binary = context.binary.substring(16);
         const subPackets = context.binary.substring(0, length);
-        result.push(
-          new PacketFunction(type, parsePacket({ binary: subPackets }))
-        );
+        children = parsePacket({ binary: subPackets });
         context.binary = context.binary.substring(length);
       } else {
         // if next bit is 1 then read the next 11 bits to get the number of packets
         const lengthString = context.binary.substring(1, 12);
         const packets = parseInt(lengthString, 2);
         context.binary = context.binary.substring(12);
-        result.push(new PacketFunction(type, parsePacket(context, packets)));
+        children = parsePacket(context, packets);
+      }
+      switch (type) {
+        case 0:
+          result.push(children.reduce((acc, packet) => acc + packet, 0));
+          break;
+        case 1:
+          result.push(children.reduce((acc, packet) => acc * packet, 1));
+          break;
+        case 2:
+          result.push(Math.min(...children));
+          break;
+        case 3:
+          result.push(Math.max(...children));
+          break;
+        case 5:
+          if (children[0] > children[1]) {
+            result.push(1);
+          } else {
+            result.push(0);
+          }
+          break;
+        case 6:
+          if (children[0] < children[1]) {
+            result.push(1);
+          } else {
+            result.push(0);
+          }
+          break;
+        case 7:
+          if (children[0] === children[1]) {
+            result.push(1);
+          } else {
+            result.push(0);
+          }
+          break;
+        default:
+          console.error("Unknown packet function", type);
       }
     }
     packetsToParse--;
@@ -131,7 +111,7 @@ function part1(intput: string) {
   // console.log(binary);
 
   const results = parsePacket({ binary });
-  console.log(results.map((result) => result.getValue()));
+  console.log(results);
 }
 
 part1("C200B40A82");
